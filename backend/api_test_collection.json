@@ -1,0 +1,741 @@
+{
+  "info": {
+    "name": "Leadership Gold CMS — API Test Suite",
+    "description": "Pre-configured Postman v2.1 collection for the Church Management System backend.\nBase URL: http://localhost:8080\n\nUSAGE:\n1. Run 'POST Login (Admin)' first — the collection auto-saves the token.\n2. All subsequent requests use {{token}} and {{baseUrl}} variables automatically.\n3. Seed data from import.sql must be loaded before running analytics tests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "cms-leadership-gold-v1"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "token",   "value": "",                      "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "POST Login (Admin — Global Access)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('token', json.token);",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Token received', () => pm.expect(json.token).to.be.a('string').and.not.empty);",
+                  "pm.test('Role is ADMIN', () => pm.expect(json.role).to.eql('ADMIN'));",
+                  "console.log('Token saved:', json.token.substring(0, 40) + '...');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] }
+          }
+        },
+        {
+          "name": "POST Login (Zone Leader — Zone 1 Scoped)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Role is ZONE_LEADER', () => pm.expect(json.role).to.eql('ZONE_LEADER'));",
+                  "pm.test('Zone assigned', () => pm.expect(json.assignedZoneId).to.eql('Z001'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"zone1leader\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] }
+          }
+        },
+        {
+          "name": "POST Login (KCU Leader — KCU001 Scoped)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Role is KCU_LEADER', () => pm.expect(json.role).to.eql('KCU_LEADER'));",
+                  "pm.test('KCU assigned', () => pm.expect(json.assignedKcuId).to.eql('KCU001'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"kcu1leader\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] }
+          }
+        },
+        {
+          "name": "POST Login — Bad Credentials (expect 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"wrongpassword\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Dashboard",
+      "item": [
+        {
+          "name": "GET Dashboard KPIs (Admin — all counts)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has totalActiveMembers', () => pm.expect(json.totalActiveMembers).to.be.a('number'));",
+                  "pm.test('Has leadershipAnomalies', () => pm.expect(json.leadershipAnomalies).to.be.a('number'));",
+                  "pm.test('Has talentNotServing', () => pm.expect(json.talentNotServing).to.be.a('number'));",
+                  "pm.test('Leadership anomalies >= 2 (seed data)', () => pm.expect(json.leadershipAnomalies).to.be.at.least(2));",
+                  "pm.test('Talent bench >= 2 (seed data)', () => pm.expect(json.talentNotServing).to.be.at.least(2));",
+                  "console.log('KPIs:', JSON.stringify(json, null, 2));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/dashboard/kpis", "host": ["{{baseUrl}}"], "path": ["api","dashboard","kpis"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Members",
+      "item": [
+        {
+          "name": "GET Members List (paginated, no filter)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has content array', () => pm.expect(json.content).to.be.an('array'));",
+                  "pm.test('Has totalElements', () => pm.expect(json.totalElements).to.be.a('number'));",
+                  "if (json.content.length > 0) {",
+                  "  var m = json.content[0];",
+                  "  pm.test('Member has memberId', () => pm.expect(m.memberId).to.be.a('string'));",
+                  "  pm.test('Member has fullName', () => pm.expect(m.fullName).to.be.a('string'));",
+                  "  pm.test('Member has vipStatus', () => pm.expect(m).to.have.property('vipStatus'));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/members?page=0&size=20&sort=fullName,asc",
+              "host": ["{{baseUrl}}"], "path": ["api","members"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" },
+                { "key": "sort", "value": "fullName,asc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Members List (filtered — Zone 1, Active, Male)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "json.content.forEach(m => {",
+                  "  pm.test('All results are Male', () => pm.expect(m.gender).to.eql('Male'));",
+                  "  pm.test('All results are Active', () => pm.expect(m.memberStatus).to.eql('Active'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/members?zoneId=Z001&gender=Male&status=Active",
+              "host": ["{{baseUrl}}"], "path": ["api","members"],
+              "query": [
+                { "key": "zoneId", "value": "Z001" },
+                { "key": "gender", "value": "Male" },
+                { "key": "status", "value": "Active" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Member Profile — M011 (with spouse + children)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Correct member', () => pm.expect(json.memberId).to.eql('M011'));",
+                  "pm.test('Has partner', () => pm.expect(json.partnerId).to.eql('M012'));",
+                  "pm.test('Has children', () => pm.expect(json.children).to.be.an('array').with.lengthOf(2));",
+                  "pm.test('Has ministries', () => pm.expect(json.ministries).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/members/M011", "host": ["{{baseUrl}}"], "path": ["api","members","M011"] }
+          }
+        },
+        {
+          "name": "POST Register New Member (full wizard payload)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "var json = pm.response.json();",
+                  "pm.test('Member ID matches', () => pm.expect(json.memberId).to.eql('M099'));",
+                  "pm.test('Status is Active', () => pm.expect(json.memberStatus).to.eql('Active'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"memberId\": \"M099\",\n  \"fullName\": \"Test Registration Member\",\n  \"phone\": \"0999999999\",\n  \"gender\": \"Female\",\n  \"birthDate\": \"1997-06-15\",\n  \"maritalStatus\": \"Single\",\n  \"partnerId\": null,\n  \"zoneId\": \"Z002\",\n  \"kcuId\": \"KCU003\",\n  \"salvationStatus\": 1,\n  \"salvationDate\": \"2022-03-20\",\n  \"baptismStatus\": \"Baptized\",\n  \"rightHandGiven\": \"Yes\",\n  \"vipStatus\": \"In Progress\",\n  \"children\": [\n    {\n      \"childId\": null,\n      \"childName\": \"Test Child\",\n      \"childDob\": \"2023-01-01\",\n      \"childGender\": \"Male\"\n    }\n  ],\n  \"ministryIds\": [],\n  \"competencyIds\": [\"COMP01\"],\n  \"notes\": \"Registered via API test\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/members/register", "host": ["{{baseUrl}}"], "path": ["api","members","register"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Bulk Attendance Hub",
+      "item": [
+        {
+          "name": "POST Bulk Attendance — Sunday Session (mixed PRESENT/ABSENT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "var json = pm.response.json();",
+                  "pm.test('Status is success', () => pm.expect(json.status).to.eql('success'));",
+                  "pm.test('Message confirms count', () => pm.expect(json.message).to.include('5 attendance records'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  { \"memberId\": \"M001\", \"eventType\": \"SUNDAY\", \"attDate\": \"2026-05-18\", \"status\": \"PRESENT\" },\n  { \"memberId\": \"M002\", \"eventType\": \"SUNDAY\", \"attDate\": \"2026-05-18\", \"status\": \"PRESENT\" },\n  { \"memberId\": \"M003\", \"eventType\": \"SUNDAY\", \"attDate\": \"2026-05-18\", \"status\": \"ABSENT\"  },\n  { \"memberId\": \"M011\", \"eventType\": \"SUNDAY\", \"attDate\": \"2026-05-18\", \"status\": \"PRESENT\" },\n  { \"memberId\": \"M008\", \"eventType\": \"SUNDAY\", \"attDate\": \"2026-05-18\", \"status\": \"ABSENT\"  }\n]"
+            },
+            "url": { "raw": "{{baseUrl}}/api/attendance/submit", "host": ["{{baseUrl}}"], "path": ["api","attendance","submit"] }
+          }
+        },
+        {
+          "name": "POST Bulk Attendance — KCU Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Care engine triggered', () => pm.expect(pm.response.json().message).to.include('Care engine triggered'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  { \"memberId\": \"M001\", \"eventType\": \"KCU\", \"attDate\": \"2026-05-20\", \"status\": \"PRESENT\" },\n  { \"memberId\": \"M008\", \"eventType\": \"KCU\", \"attDate\": \"2026-05-20\", \"status\": \"ABSENT\"  }\n]"
+            },
+            "url": { "raw": "{{baseUrl}}/api/attendance/submit", "host": ["{{baseUrl}}"], "path": ["api","attendance","submit"] }
+          }
+        },
+        {
+          "name": "POST Bulk Attendance — Validation Error (blank memberId)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  { \"memberId\": \"\", \"eventType\": \"SUNDAY\", \"attDate\": \"2026-05-18\", \"status\": \"PRESENT\" }\n]"
+            },
+            "url": { "raw": "{{baseUrl}}/api/attendance/submit", "host": ["{{baseUrl}}"], "path": ["api","attendance","submit"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Follow-Up Worklist",
+      "item": [
+        {
+          "name": "GET Pending Follow-Ups (Admin — all cases)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "var json = pm.response.json();",
+                  "pm.test('Returns array', () => pm.expect(json).to.be.an('array'));",
+                  "if (json.length > 0) {",
+                  "  pm.test('All items are PENDING', () => json.forEach(f => pm.expect(f.status).to.eql('PENDING')));",
+                  "  pm.test('Has memberName', () => pm.expect(json[0].memberName).to.be.a('string'));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/followups", "host": ["{{baseUrl}}"], "path": ["api","followups"] }
+          }
+        },
+        {
+          "name": "GET Overdue Follow-Ups (72+ hours unactioned)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "pm.test('Seed FU001 is overdue (4 days old)', () => {",
+                  "  var overdue = pm.response.json();",
+                  "  var fu001 = overdue.find(f => f.followupId === 'FU001');",
+                  "  pm.expect(fu001).to.not.be.undefined;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/followups/overdue", "host": ["{{baseUrl}}"], "path": ["api","followups","overdue"] }
+          }
+        },
+        {
+          "name": "PATCH Resolve Follow-Up FU001",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "var json = pm.response.json();",
+                  "pm.test('Status updated to RESOLVED', () => pm.expect(json.status).to.eql('RESOLVED'));",
+                  "pm.test('Notes saved', () => pm.expect(json.notes).to.include('Called member'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"RESOLVED\",\n  \"notes\": \"Called member on 2026-05-19. She was travelling. Will return next Sunday.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/followups/FU001", "host": ["{{baseUrl}}"], "path": ["api","followups","FU001"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Pastoral Report Center",
+      "item": [
+        {
+          "name": "GET Membership Report (Category A)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "var json = pm.response.json();",
+                  "pm.test('Has totalActive', () => pm.expect(json.totalActive).to.be.a('number'));",
+                  "pm.test('Has membersWithNoKcu', () => pm.expect(json.membersWithNoKcu).to.be.a('number'));",
+                  "pm.test('Structural gap >= 2 (M006, M007)', () => pm.expect(json.membersWithNoKcu).to.be.at.least(2));",
+                  "pm.test('Has genderDistribution', () => pm.expect(json.genderDistribution).to.be.an('object'));",
+                  "pm.test('Has ageDistribution', () => pm.expect(json.ageDistribution).to.be.an('object'));",
+                  "console.log('Membership Report:', JSON.stringify(json, null, 2));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/reports/membership", "host": ["{{baseUrl}}"], "path": ["api","reports","membership"] }
+          }
+        },
+        {
+          "name": "GET Attendance Report — Last 90 Days (Category B)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "var json = pm.response.json();",
+                  "pm.test('Has averageRateByEventType', () => pm.expect(json.averageRateByEventType).to.be.an('object'));",
+                  "pm.test('Has weeklyTrend array', () => pm.expect(json.weeklyTrend).to.be.an('array'));",
+                  "pm.test('Has absentTwoPlusWeeks', () => pm.expect(json.absentTwoPlusWeeks).to.be.an('array'));",
+                  "pm.test('M008 in care alert list', () => {",
+                  "  var found = json.absentTwoPlusWeeks.find(m => m.memberId === 'M008');",
+                  "  pm.expect(found).to.not.be.undefined;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/reports/attendance", "host": ["{{baseUrl}}"], "path": ["api","reports","attendance"] }
+          }
+        },
+        {
+          "name": "GET Attendance Report — Custom Date Range",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/attendance?from=2026-01-01&to=2026-05-19",
+              "host": ["{{baseUrl}}"], "path": ["api","reports","attendance"],
+              "query": [
+                { "key": "from", "value": "2026-01-01" },
+                { "key": "to",   "value": "2026-05-19" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Spiritual Report — Leadership Anomaly Rule (Category D) ★",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "var json = pm.response.json();",
+                  "pm.test('Has leadershipAnomalies array', () => pm.expect(json.leadershipAnomalies).to.be.an('array'));",
+                  "pm.test('Anomaly count >= 2 (M002 + M003)', () => pm.expect(json.leadershipAnomalies.length).to.be.at.least(2));",
+                  "",
+                  "var dawit = json.leadershipAnomalies.find(a => a.memberId === 'M002');",
+                  "pm.test('M002 Dawit in anomaly list', () => pm.expect(dawit).to.not.be.undefined);",
+                  "pm.test('M002 vipStatus is In Progress', () => pm.expect(dawit.vipStatus).to.eql('In Progress'));",
+                  "pm.test('M002 serving in Worship Ministry', () => pm.expect(dawit.ministriesServing).to.include('Worship Ministry'));",
+                  "",
+                  "var sara = json.leadershipAnomalies.find(a => a.memberId === 'M003');",
+                  "pm.test('M003 Sara in anomaly list', () => pm.expect(sara).to.not.be.undefined);",
+                  "pm.test('M003 vipStatus is Not Started', () => pm.expect(sara.vipStatus).to.eql('Not Started'));",
+                  "pm.test('M003 serving in Media Ministry', () => pm.expect(sara.ministriesServing).to.include('Media Ministry'));",
+                  "",
+                  "pm.test('Has vipStatusDistribution', () => pm.expect(json.vipStatusDistribution).to.be.an('object'));",
+                  "pm.test('Has baptismCandidates count', () => pm.expect(json.baptismCandidates).to.be.a('number'));",
+                  "console.log('Anomalies found:', json.leadershipAnomalies.length);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/reports/spiritual", "host": ["{{baseUrl}}"], "path": ["api","reports","spiritual"] }
+          }
+        },
+        {
+          "name": "GET Talent Report — Full Scanner (Category E) ★",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "var json = pm.response.json();",
+                  "pm.test('Has ministryDensities', () => pm.expect(json.ministryDensities).to.be.an('object'));",
+                  "pm.test('Has talentNotServing array', () => pm.expect(json.talentNotServing).to.be.an('array'));",
+                  "pm.test('Talent bench >= 2 (M004 + M005)', () => pm.expect(json.talentNotServing.length).to.be.at.least(2));",
+                  "",
+                  "var hana = json.talentNotServing.find(t => t.memberId === 'M004');",
+                  "pm.test('M004 Hana in talent list', () => pm.expect(hana).to.not.be.undefined);",
+                  "pm.test('M004 has Music skill', () => pm.expect(hana.skills).to.include('Music'));",
+                  "pm.test('M004 has Video Editing skill', () => pm.expect(hana.skills).to.include('Video Editing'));",
+                  "",
+                  "var bereket = json.talentNotServing.find(t => t.memberId === 'M005');",
+                  "pm.test('M005 Bereket in talent list', () => pm.expect(bereket).to.not.be.undefined);",
+                  "pm.test('M005 has Sound Engineering skill', () => pm.expect(bereket.skills).to.include('Sound Engineering'));",
+                  "console.log('Talent bench size:', json.talentNotServing.length);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/reports/talent", "host": ["{{baseUrl}}"], "path": ["api","reports","talent"] }
+          }
+        },
+        {
+          "name": "GET Talent Report — Filtered by Skill (skill=Music)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "var json = pm.response.json();",
+                  "pm.test('All results have Music skill', () => {",
+                  "  json.talentNotServing.forEach(t => {",
+                  "    var hasMusic = t.skills.some(s => s.toLowerCase().includes('music'));",
+                  "    pm.expect(hasMusic).to.be.true;",
+                  "  });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/talent?skill=Music",
+              "host": ["{{baseUrl}}"], "path": ["api","reports","talent"],
+              "query": [{ "key": "skill", "value": "Music" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Admin Panel",
+      "item": [
+        {
+          "name": "GET All Zones",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returns 4 zones', () => pm.expect(pm.response.json().length).to.eql(4));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/zones", "host": ["{{baseUrl}}"], "path": ["api","admin","zones"] }
+          }
+        },
+        {
+          "name": "GET KCUs for Zone 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returns 2 KCUs for Zone 1', () => pm.expect(pm.response.json().length).to.eql(2));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/kcus?zoneId=Z001",
+              "host": ["{{baseUrl}}"], "path": ["api","admin","kcus"],
+              "query": [{ "key": "zoneId", "value": "Z001" }]
+            }
+          }
+        },
+        {
+          "name": "GET All Ministries (13 expected)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returns 13 ministries', () => pm.expect(pm.response.json().length).to.eql(13));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/ministries", "host": ["{{baseUrl}}"], "path": ["api","admin","ministries"] }
+          }
+        },
+        {
+          "name": "GET All Competencies (10 expected)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returns 10 competencies', () => pm.expect(pm.response.json().length).to.eql(10));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/competencies", "host": ["{{baseUrl}}"], "path": ["api","admin","competencies"] }
+          }
+        },
+        {
+          "name": "GET Admin Endpoint as KCU Leader (expect 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 — RBAC enforced', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer PASTE_KCU_LEADER_TOKEN_HERE" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/zones", "host": ["{{baseUrl}}"], "path": ["api","admin","zones"] }
+          }
+        }
+      ]
+    }
+  ]
+}

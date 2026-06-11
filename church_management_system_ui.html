@@ -1,0 +1,995 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,wght@0,300;0,400;1,300&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --c-deep: #1a2332;
+    --c-navy: #243447;
+    --c-primary: #2B6CB0;
+    --c-primary-light: #EBF4FF;
+    --c-gold: #C9A227;
+    --c-gold-light: #FFF8E1;
+    --c-green: #276749;
+    --c-green-light: #E6F4EF;
+    --c-red: #C53030;
+    --c-red-light: #FFF5F5;
+    --c-amber: #B7791F;
+    --c-amber-light: #FFFBEB;
+    --c-sidebar: #1E3A5F;
+    --c-sidebar-hover: #2D5282;
+    --c-sidebar-active: #2B6CB0;
+    --c-text: var(--color-text-primary);
+    --c-text-muted: var(--color-text-secondary);
+    --c-border: var(--color-border-tertiary);
+    --c-bg: var(--color-background-primary);
+    --c-bg2: var(--color-background-secondary);
+    --c-bg3: var(--color-background-tertiary);
+  }
+  body { font-family: 'DM Sans', sans-serif; }
+  .app { display: flex; height: 680px; border: 0.5px solid var(--c-border); border-radius: 12px; overflow: hidden; background: var(--c-bg3); }
+  
+  /* Sidebar */
+  .sidebar { width: 220px; background: var(--c-sidebar); display: flex; flex-direction: column; flex-shrink: 0; }
+  .sb-logo { padding: 20px 16px 16px; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
+  .sb-logo-icon { width: 32px; height: 32px; background: var(--c-gold); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+  .sb-logo-icon svg { width: 18px; height: 18px; fill: #1a2332; }
+  .sb-logo h1 { font-family: 'Fraunces', serif; font-size: 14px; font-weight: 400; color: #fff; line-height: 1.2; }
+  .sb-logo p { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+  .sb-role { margin: 12px 12px 8px; background: rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 10px; }
+  .sb-role-label { font-size: 9px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.08em; }
+  .sb-role-name { font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 500; margin-top: 2px; }
+  .sb-section { font-size: 9px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.1em; padding: 12px 16px 4px; }
+  .sb-nav { flex: 1; overflow-y: auto; padding: 4px 0; }
+  .sb-nav::-webkit-scrollbar { width: 0; }
+  .sb-item { display: flex; align-items: center; gap: 9px; padding: 8px 14px; cursor: pointer; color: rgba(255,255,255,0.65); font-size: 12.5px; border-radius: 6px; margin: 1px 8px; transition: all 0.15s; }
+  .sb-item:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); }
+  .sb-item.active { background: var(--c-primary); color: #fff; font-weight: 500; }
+  .sb-item svg { width: 15px; height: 15px; flex-shrink: 0; opacity: 0.8; }
+  .sb-item.active svg { opacity: 1; }
+  .sb-badge { margin-left: auto; background: rgba(255,100,100,0.3); color: #ff8080; font-size: 10px; padding: 1px 6px; border-radius: 10px; }
+  .sb-footer { padding: 12px; border-top: 0.5px solid rgba(255,255,255,0.1); }
+  .sb-user { display: flex; align-items: center; gap: 8px; }
+  .sb-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--c-gold); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: #1a2332; flex-shrink: 0; }
+  .sb-user-info p { font-size: 11px; color: rgba(255,255,255,0.8); font-weight: 500; }
+  .sb-user-info span { font-size: 10px; color: rgba(255,255,255,0.4); }
+
+  /* Main content */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { background: var(--c-bg); border-bottom: 0.5px solid var(--c-border); padding: 0 20px; height: 52px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .topbar-title { font-size: 15px; font-weight: 500; color: var(--c-text); }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .tb-btn { background: none; border: 0.5px solid var(--c-border); border-radius: 6px; padding: 5px 12px; font-size: 12px; color: var(--c-text-muted); cursor: pointer; display: flex; align-items: center; gap: 5px; }
+  .tb-btn:hover { border-color: var(--c-primary); color: var(--c-primary); }
+  .tb-btn.primary { background: var(--c-primary); color: #fff; border-color: var(--c-primary); }
+  .content { flex: 1; overflow-y: auto; padding: 20px; }
+  .content::-webkit-scrollbar { width: 4px; }
+  .content::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 2px; }
+
+  /* Role switcher tabs */
+  .role-tabs { display: flex; gap: 6px; margin-bottom: 18px; background: var(--c-bg2); padding: 4px; border-radius: 8px; width: fit-content; }
+  .role-tab { padding: 5px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; color: var(--c-text-muted); border: none; background: none; transition: all 0.15s; }
+  .role-tab.active { background: var(--c-bg); color: var(--c-text); font-weight: 500; box-shadow: 0 0 0 0.5px var(--c-border); }
+
+  /* Stat cards */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+  .stat-card { background: var(--c-bg); border: 0.5px solid var(--c-border); border-radius: 10px; padding: 14px 16px; }
+  .stat-label { font-size: 11px; color: var(--c-text-muted); margin-bottom: 6px; }
+  .stat-value { font-size: 24px; font-weight: 500; color: var(--c-text); line-height: 1; }
+  .stat-sub { font-size: 11px; margin-top: 4px; }
+  .stat-up { color: var(--c-green); }
+  .stat-down { color: var(--c-red); }
+  .stat-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+
+  /* Cards */
+  .card { background: var(--c-bg); border: 0.5px solid var(--c-border); border-radius: 10px; margin-bottom: 14px; }
+  .card-header { padding: 14px 16px; border-bottom: 0.5px solid var(--c-border); display: flex; align-items: center; justify-content: space-between; }
+  .card-title { font-size: 13px; font-weight: 500; color: var(--c-text); }
+  .card-body { padding: 16px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  /* Table */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .tbl th { text-align: left; font-size: 11px; font-weight: 500; color: var(--c-text-muted); padding: 8px 12px; border-bottom: 0.5px solid var(--c-border); }
+  .tbl td { padding: 9px 12px; border-bottom: 0.5px solid var(--c-border); color: var(--c-text); vertical-align: middle; }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl tr:hover td { background: var(--c-bg2); }
+
+  /* Badges */
+  .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; }
+  .badge-green { background: var(--c-green-light); color: var(--c-green); }
+  .badge-red { background: var(--c-red-light); color: var(--c-red); }
+  .badge-amber { background: var(--c-amber-light); color: var(--c-amber); }
+  .badge-blue { background: var(--c-primary-light); color: var(--c-primary); }
+  .badge-gray { background: var(--c-bg2); color: var(--c-text-muted); }
+
+  /* Attendance bars */
+  .att-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .att-bar { flex: 1; height: 6px; background: var(--c-bg2); border-radius: 3px; overflow: hidden; }
+  .att-fill { height: 100%; border-radius: 3px; }
+  .att-pct { font-size: 11px; color: var(--c-text-muted); min-width: 30px; text-align: right; }
+
+  /* Form elements */
+  .form-group { margin-bottom: 14px; }
+  .form-label { display: block; font-size: 12px; color: var(--c-text-muted); margin-bottom: 5px; }
+  .form-input { width: 100%; border: 0.5px solid var(--c-border); border-radius: 6px; padding: 7px 10px; font-size: 13px; background: var(--c-bg); color: var(--c-text); font-family: inherit; }
+  .form-input:focus { outline: none; border-color: var(--c-primary); }
+  .form-select { width: 100%; border: 0.5px solid var(--c-border); border-radius: 6px; padding: 7px 10px; font-size: 13px; background: var(--c-bg); color: var(--c-text); font-family: inherit; cursor: pointer; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  
+  /* Member avatar */
+  .m-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; flex-shrink: 0; }
+  .m-avatar.a { background: #EBF4FF; color: var(--c-primary); }
+  .m-avatar.b { background: var(--c-green-light); color: var(--c-green); }
+  .m-avatar.c { background: var(--c-gold-light); color: var(--c-gold); }
+  .m-avatar.d { background: var(--c-red-light); color: var(--c-red); }
+
+  /* Followup items */
+  .fu-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid var(--c-border); align-items: flex-start; }
+  .fu-item:last-child { border-bottom: none; }
+  .fu-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+
+  /* Progress circle */
+  .prog-ring { transform: rotate(-90deg); }
+
+  /* Login */
+  .login-wrap { min-height: 680px; display: flex; align-items: center; justify-content: center; background: var(--c-bg3); border-radius: 12px; }
+  .login-card { background: var(--c-bg); border: 0.5px solid var(--c-border); border-radius: 14px; padding: 36px 32px; width: 340px; }
+  .login-logo { text-align: center; margin-bottom: 24px; }
+  .login-icon { width: 48px; height: 48px; background: var(--c-sidebar); border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+  .login-icon svg { width: 26px; height: 26px; fill: var(--c-gold); }
+  .login-logo h2 { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 400; color: var(--c-text); }
+  .login-logo p { font-size: 12px; color: var(--c-text-muted); margin-top: 3px; }
+  .login-submit { width: 100%; background: var(--c-sidebar); color: #fff; border: none; border-radius: 8px; padding: 10px; font-size: 14px; font-family: inherit; font-weight: 500; cursor: pointer; margin-top: 6px; }
+  .login-submit:hover { background: var(--c-primary); }
+
+  /* Profile page */
+  .profile-hero { background: var(--c-sidebar); border-radius: 10px; padding: 20px; color: #fff; margin-bottom: 14px; display: flex; align-items: center; gap: 16px; }
+  .profile-big-avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--c-gold); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 500; color: #1a2332; flex-shrink: 0; }
+  .profile-info h2 { font-size: 18px; font-weight: 500; }
+  .profile-info p { font-size: 12px; opacity: 0.65; margin-top: 2px; }
+  .profile-badges { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .pb { padding: 2px 10px; border-radius: 12px; font-size: 11px; background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
+
+  /* KCU zone mini cards */
+  .zone-card { background: var(--c-bg); border: 0.5px solid var(--c-border); border-radius: 8px; padding: 12px; }
+  .zone-name { font-size: 13px; font-weight: 500; color: var(--c-text); margin-bottom: 8px; }
+  .zone-kcu-list { display: flex; flex-direction: column; gap: 6px; }
+  .zone-kcu-item { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+
+  /* Admin tabs */
+  .admin-tabs { display: flex; gap: 0; border-bottom: 0.5px solid var(--c-border); margin-bottom: 16px; }
+  .admin-tab { padding: 8px 16px; font-size: 12.5px; cursor: pointer; color: var(--c-text-muted); border-bottom: 2px solid transparent; margin-bottom: -0.5px; }
+  .admin-tab.active { color: var(--c-primary); border-bottom-color: var(--c-primary); font-weight: 500; }
+
+  /* Chart bars */
+  .bar-chart { display: flex; align-items: flex-end; gap: 5px; height: 100px; padding: 0 4px; }
+  .bar-col { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; }
+  .bar { width: 100%; border-radius: 3px 3px 0 0; background: var(--c-primary); opacity: 0.75; transition: opacity 0.15s; cursor: pointer; }
+  .bar:hover { opacity: 1; }
+  .bar-label { font-size: 9px; color: var(--c-text-muted); }
+  .bar.alt { background: var(--c-green); }
+
+  /* Attendance checklist */
+  .att-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--c-border); }
+  .att-row:last-child { border-bottom: none; }
+  .att-check { width: 18px; height: 18px; border: 1.5px solid var(--c-border); border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .att-check.checked { background: var(--c-green); border-color: var(--c-green); }
+
+  /* Notification dot */
+  .notif-dot { width: 7px; height: 7px; border-radius: 50%; background: #E53E3E; display: inline-block; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .search-bar { display: flex; align-items: center; gap: 8px; background: var(--c-bg2); border: 0.5px solid var(--c-border); border-radius: 8px; padding: 7px 12px; flex: 1; max-width: 280px; }
+  .search-bar input { border: none; background: none; font-size: 12.5px; color: var(--c-text); outline: none; flex: 1; font-family: inherit; width: 100%; }
+  .search-bar svg { width: 14px; height: 14px; color: var(--c-text-muted); flex-shrink: 0; }
+</style>
+
+<h2 class="sr-only">Church Management System — Full UI Prototype with 13 pages across Login, Dashboard, Members, Registration, Attendance, Follow-Up, Reports, and Administration</h2>
+
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2l2 6h6l-5 4 2 6-5-4-5 4 2-6-5-4h6z"/></svg>
+      </div>
+      <h1>Bethel Church</h1>
+      <p>Management System</p>
+    </div>
+    <div class="sb-role">
+      <div class="sb-role-label">Signed in as</div>
+      <div class="sb-role-name" id="role-display">Pastor</div>
+    </div>
+    <div class="sb-nav" id="sidebar-nav">
+      <!-- nav populated by JS -->
+    </div>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar" id="user-initials">PA</div>
+        <div class="sb-user-info">
+          <p id="user-name">Pastor Admin</p>
+          <span id="user-role-tag">Pastor</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span class="topbar-title" id="page-title">Dashboard</span>
+      </div>
+      <div class="topbar-right">
+        <!-- Role switcher -->
+        <div class="role-tabs" style="margin-bottom:0;">
+          <button class="role-tab active" onclick="switchRole('pastor')">Pastor</button>
+          <button class="role-tab" onclick="switchRole('zone')">Zone Leader</button>
+          <button class="role-tab" onclick="switchRole('kcu')">KCU Leader</button>
+        </div>
+        <button class="tb-btn" id="topbar-action-btn" style="display:none;">+ Add Member</button>
+      </div>
+    </div>
+    <div class="content">
+      <!-- Pages -->
+      <div class="page active" id="page-dashboard">
+        <!-- Populated by JS -->
+      </div>
+      <div class="page" id="page-members">
+        <!-- Populated by JS -->
+      </div>
+      <div class="page" id="page-profile">
+        <!-- Populated by JS -->
+      </div>
+      <div class="page" id="page-registration">
+        <!-- Populated by JS -->
+      </div>
+      <div class="page" id="page-attendance">
+        <!-- Populated by JS -->
+      </div>
+      <div class="page" id="page-followup">
+        <!-- Populated by JS -->
+      </div>
+      <div class="page" id="page-reports">
+        <!-- Populated by JS -->
+      </div>
+      <div class="page" id="page-admin">
+        <!-- Populated by JS -->
+      </div>
+      <div class="page" id="page-login">
+        <!-- Populated by JS -->
+      </div>
+      <div class="page" id="page-zones">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const roles = {
+  pastor: {
+    name: 'Pastor Admin', initials: 'PA', tag: 'Pastor',
+    nav: [
+      { id: 'dashboard', icon: iconGrid, label: 'Dashboard' },
+      { id: 'members', icon: iconUsers, label: 'Members' },
+      { id: 'attendance', icon: iconCheck, label: 'Attendance' },
+      { id: 'followup', icon: iconBell, label: 'Follow-Up', badge: '5' },
+      { id: 'zones', icon: iconMap, label: 'Zones & KCUs' },
+      { id: 'reports', icon: iconChart, label: 'Reports & Analytics' },
+      { id: 'admin', icon: iconSettings, label: 'Administration' },
+      { id: 'login', icon: iconLogout, label: 'Login Page (demo)' }
+    ]
+  },
+  zone: {
+    name: 'Zone Leader A', initials: 'ZA', tag: 'Zone Leader',
+    nav: [
+      { id: 'dashboard', icon: iconGrid, label: 'Dashboard' },
+      { id: 'members', icon: iconUsers, label: 'KCU Members' },
+      { id: 'attendance', icon: iconCheck, label: 'Attendance' },
+      { id: 'followup', icon: iconBell, label: 'Follow-Up', badge: '3' },
+      { id: 'registration', icon: iconUserPlus, label: 'Registration' },
+      { id: 'reports', icon: iconChart, label: 'Zone Reports' },
+      { id: 'login', icon: iconLogout, label: 'Login Page (demo)' }
+    ]
+  },
+  kcu: {
+    name: 'KCU Leader B', initials: 'KB', tag: 'KCU Leader',
+    nav: [
+      { id: 'dashboard', icon: iconGrid, label: 'Dashboard' },
+      { id: 'members', icon: iconUsers, label: 'My Members' },
+      { id: 'attendance', icon: iconCheck, label: 'Take Attendance' },
+      { id: 'followup', icon: iconBell, label: 'Follow-Up', badge: '2' },
+      { id: 'registration', icon: iconUserPlus, label: 'New Member' },
+      { id: 'login', icon: iconLogout, label: 'Login Page (demo)' }
+    ]
+  }
+};
+
+function iconGrid() { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`; }
+function iconUsers() { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/><path d="M19 8v6M22 11h-6" stroke-width="2"/></svg>`; }
+function iconCheck() { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`; }
+function iconBell() { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`; }
+function iconChart() { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`; }
+function iconSettings() { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`; }
+function iconMap() { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>`; }
+function iconUserPlus() { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>`; }
+function iconLogout() { return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`; }
+
+let currentRole = 'pastor';
+let currentPage = 'dashboard';
+
+function switchRole(role) {
+  currentRole = role;
+  document.querySelectorAll('.role-tab').forEach((t,i) => t.classList.toggle('active', ['pastor','zone','kcu'][i]===role));
+  const r = roles[role];
+  document.getElementById('role-display').textContent = r.tag;
+  document.getElementById('user-initials').textContent = r.initials;
+  document.getElementById('user-name').textContent = r.name;
+  document.getElementById('user-role-tag').textContent = r.tag;
+  renderNav(role);
+  navigateTo('dashboard');
+}
+
+function renderNav(role) {
+  const nav = roles[role].nav;
+  const el = document.getElementById('sidebar-nav');
+  let html = '';
+  const sections = {
+    dashboard: 'Overview',
+    members: 'People',
+    attendance: 'Activity',
+    followup: 'Activity',
+    registration: 'Activity',
+    zones: 'Structure',
+    reports: 'Insights',
+    admin: 'System',
+    login: 'Auth'
+  };
+  let lastSection = '';
+  nav.forEach(item => {
+    const sec = sections[item.id] || '';
+    if (sec !== lastSection) {
+      html += `<div class="sb-section">${sec}</div>`;
+      lastSection = sec;
+    }
+    html += `<div class="sb-item ${item.id===currentPage?'active':''}" onclick="navigateTo('${item.id}')" id="nav-${item.id}">
+      ${item.icon()}
+      <span>${item.label}</span>
+      ${item.badge ? `<span class="sb-badge">${item.badge}</span>` : ''}
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function navigateTo(page) {
+  currentPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  const navEl = document.getElementById('nav-' + page);
+  if (navEl) navEl.classList.add('active');
+
+  const titles = {
+    dashboard: 'Dashboard',
+    members: 'Member Management',
+    profile: 'Member Profile',
+    registration: 'New Member Registration',
+    attendance: 'Attendance Management',
+    followup: 'Follow-Up Management',
+    reports: 'Reports & Analytics',
+    admin: 'Administration',
+    login: 'Login',
+    zones: 'Zones & KCUs'
+  };
+  document.getElementById('page-title').textContent = titles[page] || page;
+
+  const actionBtn = document.getElementById('topbar-action-btn');
+  if (page === 'members') {
+    actionBtn.style.display = 'flex';
+    actionBtn.className = 'tb-btn primary';
+    actionBtn.textContent = '+ Add Member';
+  } else if (page === 'registration') {
+    actionBtn.style.display = 'none';
+  } else {
+    actionBtn.style.display = 'none';
+  }
+}
+
+// ===== PAGE CONTENTS =====
+
+function renderDashboard() {
+  const isPastor = currentRole === 'pastor';
+  const isKcu = currentRole === 'kcu';
+  const el = document.getElementById('page-dashboard');
+
+  const statsHtml = isPastor ? `
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Total Members</div><div class="stat-value">1,284</div><div class="stat-sub stat-up">+23 this month</div></div>
+      <div class="stat-card"><div class="stat-label">Active KCUs</div><div class="stat-value">38</div><div class="stat-sub stat-up">4 zones</div></div>
+      <div class="stat-card"><div class="stat-label">Avg Attendance</div><div class="stat-value">76%</div><div class="stat-sub stat-down">-2% from last week</div></div>
+      <div class="stat-card"><div class="stat-label">Follow-Ups Pending</div><div class="stat-value">24</div><div class="stat-sub stat-down">5 critical</div></div>
+    </div>` : currentRole === 'zone' ? `
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Zone Members</div><div class="stat-value">312</div><div class="stat-sub stat-up">+7 this month</div></div>
+      <div class="stat-card"><div class="stat-label">KCUs in Zone</div><div class="stat-value">9</div><div class="stat-sub" style="color:var(--c-text-muted)">All active</div></div>
+      <div class="stat-card"><div class="stat-label">Avg Attendance</div><div class="stat-value">81%</div><div class="stat-sub stat-up">+3% from last week</div></div>
+      <div class="stat-card"><div class="stat-label">Follow-Ups</div><div class="stat-value">8</div><div class="stat-sub stat-amber" style="color:var(--c-amber)">3 pending</div></div>
+    </div>` : `
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">KCU Members</div><div class="stat-value">28</div><div class="stat-sub stat-up">+2 this month</div></div>
+      <div class="stat-card"><div class="stat-label">Present Today</div><div class="stat-value">22</div><div class="stat-sub" style="color:var(--c-text-muted)">79% rate</div></div>
+      <div class="stat-card"><div class="stat-label">Follow-Ups</div><div class="stat-value">3</div><div class="stat-sub stat-amber" style="color:var(--c-amber)">2 overdue</div></div>
+      <div class="stat-card"><div class="stat-label">New Members</div><div class="stat-value">2</div><div class="stat-sub stat-up">This month</div></div>
+    </div>`;
+
+  el.innerHTML = statsHtml + `
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Attendance Trend (Last 8 Weeks)</span></div>
+        <div class="card-body">
+          <div class="bar-chart">
+            ${[68,72,75,70,76,78,74,76].map((v,i)=>`<div class="bar-col"><div class="bar" style="height:${v}px" title="${v}%"></div><span class="bar-label">W${i+1}</span></div>`).join('')}
+          </div>
+          <div style="display:flex;gap:16px;margin-top:10px;">
+            <span style="font-size:11px;color:var(--c-text-muted);">Avg: 74%</span>
+            <span style="font-size:11px;color:var(--c-green);">+6% vs prev period</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Recent Follow-Ups</span><button class="tb-btn" onclick="navigateTo('followup')">View all</button></div>
+        <div class="card-body" style="padding:12px 16px;">
+          ${[
+            ['Samuel T.','Absent 3 weeks','amber','Pending'],
+            ['Mary A.','New member - no follow-up','red','Critical'],
+            ['John K.','Follow-up completed','green','Done'],
+            ['Grace M.','Visited last Sunday','blue','In Progress']
+          ].map(([name,reason,color,status])=>`
+            <div class="fu-item">
+              <div class="fu-dot" style="background:var(--c-${color=='green'?'green':color=='red'?'red':color=='blue'?'primary':'amber'})"></div>
+              <div style="flex:1">
+                <div style="font-size:12.5px;font-weight:500;color:var(--c-text)">${name}</div>
+                <div style="font-size:11px;color:var(--c-text-muted)">${reason}</div>
+              </div>
+              <span class="badge badge-${color=='green'?'green':color=='red'?'red':color=='blue'?'blue':'amber'}">${status}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    ${isPastor ? `
+    <div class="card" style="margin-top:0">
+      <div class="card-header"><span class="card-title">Zone Performance Overview</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <thead><tr><th>Zone</th><th>KCUs</th><th>Members</th><th>Attendance</th><th>Growth</th><th>Status</th></tr></thead>
+          <tbody>
+            ${[
+              ['Zone Alpha','9','312','81%','+5%','green'],
+              ['Zone Beta','10','368','74%','+2%','blue'],
+              ['Zone Gamma','8','296','70%','-1%','amber'],
+              ['Zone Delta','11','308','79%','+8%','green']
+            ].map(([zone,kcus,mem,att,growth,color])=>`
+              <tr>
+                <td style="font-weight:500">${zone}</td>
+                <td>${kcus}</td>
+                <td>${mem}</td>
+                <td>
+                  <div class="att-bar-wrap">
+                    <div class="att-bar"><div class="att-fill" style="width:${att};background:var(--c-${color==='green'?'green':color==='amber'?'amber':'primary'})"></div></div>
+                    <span class="att-pct">${att}</span>
+                  </div>
+                </td>
+                <td style="color:var(--c-${growth.startsWith('+')?'green':'red'})">${growth}</td>
+                <td><span class="badge badge-${color}">${growth.startsWith('+')?'Growing':'Declining'}</span></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>` : ''}`;
+}
+
+function renderMembers() {
+  const el = document.getElementById('page-members');
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <div class="search-bar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input placeholder="Search members..." /></div>
+      <select class="form-select" style="width:140px;padding:7px 10px;">
+        <option>All Zones</option><option>Zone Alpha</option><option>Zone Beta</option><option>Zone Gamma</option>
+      </select>
+      <select class="form-select" style="width:130px;padding:7px 10px;">
+        <option>All KCUs</option><option>KCU 1</option><option>KCU 2</option><option>KCU 3</option>
+      </select>
+      <select class="form-select" style="width:120px;padding:7px 10px;">
+        <option>All Status</option><option>Active</option><option>Inactive</option><option>New</option>
+      </select>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Members (1,284)</span><span style="font-size:12px;color:var(--c-text-muted)">Showing 1–10</span></div>
+      <div class="card-body" style="padding:0">
+        <table class="tbl">
+          <thead><tr><th>Name</th><th>Zone / KCU</th><th>Phone</th><th>Ministries</th><th>Attendance</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            ${[
+              ['Abebe T.','a','Zone Alpha / KCU 2','+251-911-001','Music','88%','green','Active'],
+              ['Sara M.','b','Zone Beta / KCU 5','+251-912-002','Teaching','72%','blue','Active'],
+              ['Daniel K.','c','Zone Gamma / KCU 1','+251-913-003','Ushering','45%','amber','Inactive'],
+              ['Ruth H.','d','Zone Alpha / KCU 3','+251-914-004','Media','91%','green','Active'],
+              ['Yonas L.','a','Zone Delta / KCU 7','+251-915-005','Prayer','60%','blue','Active'],
+              ['Tigist W.','b','Zone Beta / KCU 4','+251-916-006','None','20%','red','Inactive'],
+              ['Mikias G.','c','Zone Alpha / KCU 2','+251-917-007','Children','85%','green','Active'],
+              ['Hanna B.','d','Zone Gamma / KCU 6','+251-918-008','Teaching','78%','blue','New'],
+            ].map(([name,av,zone,phone,min,att,color,status])=>`
+              <tr style="cursor:pointer" onclick="navigateTo('profile')">
+                <td>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <div class="m-avatar ${av}">${name[0]}${name.split(' ')[1]?.[0]||''}</div>
+                    <span style="font-weight:500">${name}</span>
+                  </div>
+                </td>
+                <td style="color:var(--c-text-muted);font-size:12px">${zone}</td>
+                <td style="color:var(--c-text-muted);font-size:12px">${phone}</td>
+                <td><span class="badge badge-blue">${min}</span></td>
+                <td>
+                  <div class="att-bar-wrap" style="min-width:80px">
+                    <div class="att-bar"><div class="att-fill" style="width:${att};background:var(--c-${color==='green'?'green':color==='red'?'red':color==='amber'?'amber':'primary'})"></div></div>
+                    <span class="att-pct">${att}</span>
+                  </div>
+                </td>
+                <td><span class="badge badge-${color}">${status}</span></td>
+                <td><button class="tb-btn" style="padding:4px 10px;font-size:11px" onclick="event.stopPropagation();navigateTo('profile')">View</button></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderProfile() {
+  const el = document.getElementById('page-profile');
+  el.innerHTML = `
+    <button class="tb-btn" onclick="navigateTo('members')" style="margin-bottom:14px;">← Back to Members</button>
+    <div class="profile-hero">
+      <div class="profile-big-avatar">AT</div>
+      <div class="profile-info">
+        <h2>Abebe Tadesse</h2>
+        <p>Member since March 2021 · Zone Alpha · KCU 2</p>
+        <div class="profile-badges">
+          <span class="pb">Music Ministry</span>
+          <span class="pb">Teaching</span>
+          <span class="pb">KCU Member</span>
+        </div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;">
+        <button class="tb-btn" style="color:#fff;border-color:rgba(255,255,255,0.3)">Edit</button>
+        <button class="tb-btn" style="color:#fff;border-color:rgba(255,255,255,0.3)">Follow-Up</button>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Personal Information</span></div>
+        <div class="card-body">
+          <table class="tbl">
+            <tbody>
+              ${[['Full Name','Abebe Tadesse'],['Phone','+251-911-001-002'],['Email','abebe@email.com'],['Date of Birth','14 Jun 1990'],['Marital Status','Married'],['Occupation','Teacher']].map(([k,v])=>`<tr><td style="color:var(--c-text-muted);font-size:12px">${k}</td><td style="font-weight:500;font-size:12.5px">${v}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Church Information</span></div>
+        <div class="card-body">
+          <table class="tbl">
+            <tbody>
+              ${[['Zone','Zone Alpha'],['KCU','KCU 2 — Bole Area'],['KCU Leader','Pastor Samuel'],['Member Status','Active'],['Role','Member'],['Baptized','Yes — April 2021']].map(([k,v])=>`<tr><td style="color:var(--c-text-muted);font-size:12px">${k}</td><td style="font-weight:500;font-size:12.5px">${v}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Attendance History</span></div>
+        <div class="card-body">
+          <div style="display:flex;justify-content:space-between;margin-bottom:12px">
+            <div style="text-align:center"><div style="font-size:22px;font-weight:500;color:var(--c-green)">88%</div><div style="font-size:11px;color:var(--c-text-muted)">Overall Rate</div></div>
+            <div style="text-align:center"><div style="font-size:22px;font-weight:500">44</div><div style="font-size:11px;color:var(--c-text-muted)">KCU Meetings</div></div>
+            <div style="text-align:center"><div style="font-size:22px;font-weight:500">38</div><div style="font-size:11px;color:var(--c-text-muted)">Sundays</div></div>
+            <div style="text-align:center"><div style="font-size:22px;font-weight:500;color:var(--c-red)">3</div><div style="font-size:11px;color:var(--c-text-muted)">Absences</div></div>
+          </div>
+          <div class="bar-chart" style="height:70px">
+            ${[85,90,80,88,92,85,88,90].map((v,i)=>`<div class="bar-col"><div class="bar alt" style="height:${v*0.7}px"></div><span class="bar-label">M${i+1}</span></div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Follow-Up History</span></div>
+        <div class="card-body" style="padding:12px 16px">
+          ${[
+            ['Apr 12','KCU Visit','Visited at home, doing well','green'],
+            ['Mar 28','Phone Call','Missed 2 Sundays, checked in','blue'],
+            ['Feb 10','Absent Alert','3 weeks absent — flagged','amber']
+          ].map(([date,type,note,color])=>`
+            <div class="fu-item">
+              <div class="fu-dot" style="background:var(--c-${color=='green'?'green':color=='blue'?'primary':'amber'})"></div>
+              <div style="flex:1">
+                <div style="display:flex;justify-content:space-between"><span style="font-size:12.5px;font-weight:500">${type}</span><span style="font-size:11px;color:var(--c-text-muted)">${date}</span></div>
+                <div style="font-size:11px;color:var(--c-text-muted);margin-top:2px">${note}</div>
+              </div>
+            </div>`).join('')}
+          <button class="tb-btn" style="width:100%;justify-content:center;margin-top:10px">+ Add Follow-Up</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderRegistration() {
+  const el = document.getElementById('page-registration');
+  el.innerHTML = `
+    <div class="card">
+      <div class="card-header"><span class="card-title">New Member Registration</span><span class="badge badge-blue">Step 1 of 3</span></div>
+      <div class="card-body">
+        <div style="display:flex;gap:0;margin-bottom:20px">
+          ${['Personal Info','Church Info','Competencies & Ministry'].map((s,i)=>`
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+              <div style="width:28px;height:28px;border-radius:50%;background:${i===0?'var(--c-primary)':'var(--c-bg2)'};border:1.5px solid ${i===0?'var(--c-primary)':'var(--c-border)'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:${i===0?'#fff':'var(--c-text-muted)'}">${i+1}</div>
+              <span style="font-size:11px;color:${i===0?'var(--c-primary)':'var(--c-text-muted)'};text-align:center">${s}</span>
+            </div>
+            ${i<2?`<div style="flex:none;width:40px;height:1.5px;background:var(--c-border);margin-top:14px"></div>`:''}`).join('')}
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">First Name *</label><input class="form-input" placeholder="e.g. Abebe" /></div>
+          <div class="form-group"><label class="form-label">Last Name *</label><input class="form-input" placeholder="e.g. Tadesse" /></div>
+          <div class="form-group"><label class="form-label">Phone Number *</label><input class="form-input" placeholder="+251-9XX-XXX-XXX" /></div>
+          <div class="form-group"><label class="form-label">Email Address</label><input class="form-input" placeholder="email@example.com" /></div>
+          <div class="form-group"><label class="form-label">Date of Birth</label><input class="form-input" type="date" /></div>
+          <div class="form-group"><label class="form-label">Gender</label><select class="form-select"><option>Select gender</option><option>Male</option><option>Female</option></select></div>
+          <div class="form-group"><label class="form-label">Marital Status</label><select class="form-select"><option>Single</option><option>Married</option><option>Widowed</option></select></div>
+          <div class="form-group"><label class="form-label">Occupation</label><input class="form-input" placeholder="e.g. Teacher, Engineer" /></div>
+        </div>
+        <div class="form-group"><label class="form-label">Home Address</label><input class="form-input" placeholder="Sub-city, Woreda, Kebele" /></div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px">
+          <button class="tb-btn">Cancel</button>
+          <button class="tb-btn primary">Next: Church Info →</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderAttendance() {
+  const el = document.getElementById('page-attendance');
+  const checked = [true, true, false, true, true, false, true, true];
+  let checkStates = [...checked];
+  
+  el.innerHTML = `
+    <div class="two-col" style="align-items:start">
+      <div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-header"><span class="card-title">Record Attendance</span></div>
+          <div class="card-body">
+            <div class="form-grid" style="margin-bottom:14px">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Meeting Type</label>
+                <select class="form-select">
+                  <option>Weekly KCU Meeting</option>
+                  <option>Sunday Service</option>
+                  <option>Wednesday Service</option>
+                  <option>Special Event</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Date</label>
+                <input class="form-input" type="date" value="2025-04-24" />
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <span style="font-size:12.5px;font-weight:500">KCU 2 Members (28)</span>
+              <div style="display:flex;gap:6px">
+                <button class="tb-btn" style="font-size:11px;padding:4px 10px" onclick="markAll(true)">Mark All Present</button>
+                <button class="tb-btn" style="font-size:11px;padding:4px 10px" onclick="markAll(false)">Mark All Absent</button>
+              </div>
+            </div>
+            <div id="att-list">
+              ${['Abebe T.','Sara M.','Daniel K.','Ruth H.','Yonas L.','Tigist W.','Mikias G.','Hanna B.'].map((name,i)=>`
+                <div class="att-row">
+                  <div class="att-check ${checkStates[i]?'checked':''}" id="chk-${i}" onclick="toggleCheck(${i})">
+                    ${checkStates[i]?`<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg>`:''}
+                  </div>
+                  <div class="m-avatar ${['a','b','c','d','a','b','c','d'][i]}" style="width:26px;height:26px;font-size:10px">${name[0]}${name.split(' ')[1]?.[0]||''}</div>
+                  <span style="flex:1;font-size:13px">${name}</span>
+                  <span class="badge badge-${checkStates[i]?'green':'red'}" id="badge-${i}">${checkStates[i]?'Present':'Absent'}</span>
+                </div>`).join('')}
+            </div>
+            <div style="border-top:0.5px solid var(--c-border);padding-top:12px;margin-top:4px;display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:12px;color:var(--c-text-muted)">Present: <strong id="present-count">${checkStates.filter(Boolean).length}</strong> / ${checkStates.length}</span>
+              <button class="tb-btn primary">Save Attendance</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Attendance Summary</span></div>
+          <div class="card-body">
+            ${[['KCU Meeting','This Week','21/28','75%','green'],['Sunday Service','Apr 20','890/1284','69%','blue'],['Wednesday','Apr 16','380/1284','30%','amber']].map(([type,date,count,pct,color])=>`
+              <div style="margin-bottom:14px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                  <span style="font-size:12.5px;font-weight:500">${type}</span>
+                  <span style="font-size:11px;color:var(--c-text-muted)">${date}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                  <span style="font-size:11px;color:var(--c-text-muted)">${count} attended</span>
+                  <span style="font-size:11px;font-weight:500;color:var(--c-${color==='green'?'green':color==='amber'?'amber':'primary'})">${pct}</span>
+                </div>
+                <div class="att-bar" style="height:8px"><div class="att-fill" style="width:${pct};background:var(--c-${color==='green'?'green':color==='amber'?'amber':'primary'})"></div></div>
+              </div>`).join('')}
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Absent Members Alert</span></div>
+          <div class="card-body" style="padding:12px 16px">
+            ${[['Daniel K.','3 weeks absent','amber'],['Tigist W.','5 weeks absent','red']].map(([name,note,color])=>`
+              <div class="fu-item">
+                <div class="fu-dot" style="background:var(--c-${color==='red'?'red':'amber'})"></div>
+                <div style="flex:1"><div style="font-size:12.5px;font-weight:500">${name}</div><div style="font-size:11px;color:var(--c-text-muted)">${note}</div></div>
+                <button class="tb-btn" style="font-size:11px;padding:4px 10px">Follow-Up</button>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleCheck(i) {
+  const chk = document.getElementById('chk-' + i);
+  const badge = document.getElementById('badge-' + i);
+  const isNowChecked = !chk.classList.contains('checked');
+  chk.classList.toggle('checked', isNowChecked);
+  chk.innerHTML = isNowChecked ? `<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg>` : '';
+  badge.className = 'badge badge-' + (isNowChecked ? 'green' : 'red');
+  badge.textContent = isNowChecked ? 'Present' : 'Absent';
+  const count = document.querySelectorAll('.att-check.checked').length;
+  document.getElementById('present-count').textContent = count;
+}
+function markAll(present) {
+  for (let i = 0; i < 8; i++) {
+    const chk = document.getElementById('chk-' + i);
+    const badge = document.getElementById('badge-' + i);
+    chk.classList.toggle('checked', present);
+    chk.innerHTML = present ? `<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg>` : '';
+    badge.className = 'badge badge-' + (present ? 'green' : 'red');
+    badge.textContent = present ? 'Present' : 'Absent';
+  }
+  document.getElementById('present-count').textContent = present ? 8 : 0;
+}
+
+function renderFollowUp() {
+  const el = document.getElementById('page-followup');
+  el.innerHTML = `
+    <div style="display:flex;gap:10px;margin-bottom:16px">
+      <div class="search-bar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input placeholder="Search follow-ups..." /></div>
+      <select class="form-select" style="width:130px;padding:7px 10px"><option>All Status</option><option>Pending</option><option>In Progress</option><option>Done</option></select>
+      <select class="form-select" style="width:130px;padding:7px 10px"><option>All Types</option><option>Absent</option><option>New Member</option><option>Prayer</option></select>
+      <button class="tb-btn primary">+ New Follow-Up</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+      ${[['Total','24','gray'],['Critical','5','red'],['In Progress','9','blue'],['Resolved','10','green']].map(([l,v,c])=>`
+        <div class="stat-card" style="border-left:3px solid var(--c-${c==='gray'?'text-muted':c==='red'?'red':c==='blue'?'primary':'green'})">
+          <div class="stat-label">${l}</div><div class="stat-value">${v}</div>
+        </div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Follow-Up Cases</span></div>
+      <div class="card-body" style="padding:0">
+        <table class="tbl">
+          <thead><tr><th>Member</th><th>Reason</th><th>Zone / KCU</th><th>Assigned To</th><th>Last Action</th><th>Priority</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${[
+              ['Mary A.','a','New member — no contact','Zone Alpha / KCU 3','KCU Leader John','3 days ago','red','Critical','Pending'],
+              ['Samuel T.','c','Absent 3 consecutive weeks','Zone Beta / KCU 5','Zone Leader Peter','1 week ago','amber','High','In Progress'],
+              ['Tigist W.','b','5 weeks absent','Zone Beta / KCU 4','KCU Leader Ruth','2 weeks ago','red','Critical','Pending'],
+              ['Grace M.','d','New member follow-up','Zone Alpha / KCU 2','KCU Leader Sam','2 days ago','blue','Normal','In Progress'],
+              ['Yonas L.','a','Prayer request','Zone Delta / KCU 7','KCU Leader Eve','5 days ago','green','Low','Done'],
+            ].map(([name,av,reason,zone,assigned,last,color,prio,status])=>`
+              <tr>
+                <td><div style="display:flex;align-items:center;gap:8px"><div class="m-avatar ${av}">${name[0]}${name.split(' ')[1]?.[0]||''}</div><span style="font-weight:500">${name}</span></div></td>
+                <td style="font-size:12px;color:var(--c-text-muted);max-width:140px">${reason}</td>
+                <td style="font-size:12px;color:var(--c-text-muted)">${zone}</td>
+                <td style="font-size:12px">${assigned}</td>
+                <td style="font-size:11px;color:var(--c-text-muted)">${last}</td>
+                <td><span class="badge badge-${color==='red'?'red':color==='amber'?'amber':color==='green'?'green':'blue'}">${prio}</span></td>
+                <td><span class="badge badge-${status==='Done'?'green':status==='In Progress'?'blue':'gray'}">${status}</span></td>
+                <td><div style="display:flex;gap:4px"><button class="tb-btn" style="font-size:11px;padding:3px 8px">Update</button><button class="tb-btn" style="font-size:11px;padding:3px 8px">Resolve</button></div></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderReports() {
+  const el = document.getElementById('page-reports');
+  el.innerHTML = `
+    <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center">
+      <select class="form-select" style="width:140px;padding:7px 10px"><option>This Month</option><option>Last Month</option><option>Last 3 Months</option><option>This Year</option></select>
+      <select class="form-select" style="width:130px;padding:7px 10px"><option>All Zones</option><option>Zone Alpha</option><option>Zone Beta</option></select>
+      <button class="tb-btn">Export PDF</button>
+      <button class="tb-btn">Export CSV</button>
+    </div>
+    <div class="stats-grid" style="margin-bottom:16px">
+      <div class="stat-card"><div class="stat-label">Total Members</div><div class="stat-value">1,284</div><div class="stat-sub stat-up">+23 this month</div></div>
+      <div class="stat-card"><div class="stat-label">Avg KCU Attendance</div><div class="stat-value">74%</div><div class="stat-sub stat-up">+3% vs last month</div></div>
+      <div class="stat-card"><div class="stat-label">Sunday Attendance</div><div class="stat-value">69%</div><div class="stat-sub stat-down">-2%</div></div>
+      <div class="stat-card"><div class="stat-label">New Members</div><div class="stat-value">23</div><div class="stat-sub stat-up">+8 vs last month</div></div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Member Growth (12 Months)</span></div>
+        <div class="card-body">
+          <div class="bar-chart" style="height:120px">
+            ${[1180,1195,1210,1218,1222,1240,1248,1255,1262,1270,1278,1284].map((v,i)=>`<div class="bar-col"><div class="bar" style="height:${((v-1170)/120*110)}px;opacity:${0.5+i*0.04}"></div><span class="bar-label">${['J','F','M','A','M','J','J','A','S','O','N','D'][i]}</span></div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Zone Breakdown</span></div>
+        <div class="card-body">
+          ${[['Zone Alpha','312','81%','green'],['Zone Beta','368','74%','blue'],['Zone Gamma','296','70%','amber'],['Zone Delta','308','79%','green']].map(([zone,mem,att,color])=>`
+            <div style="margin-bottom:12px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-size:12.5px;font-weight:500">${zone}</span>
+                <span style="font-size:12px;color:var(--c-text-muted)">${mem} members · ${att} attend.</span>
+              </div>
+              <div class="att-bar" style="height:8px"><div class="att-fill" style="width:${att};background:var(--c-${color==='green'?'green':color==='amber'?'amber':'primary'})"></div></div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Ministry Participation Report</span></div>
+      <div class="card-body" style="padding:0">
+        <table class="tbl">
+          <thead><tr><th>Ministry</th><th>Members</th><th>Active</th><th>Avg Age</th><th>Growth</th></tr></thead>
+          <tbody>
+            ${[['Music Ministry','84','78','27','+5'],['Teaching Ministry','62','55','34','+2'],['Media & Tech','48','46','24','+8'],['Ushering','120','98','30','+1'],['Children Ministry','36','34','29','+3'],['Prayer Ministry','95','88','38','+0']].map(([min,mem,act,age,gr])=>`
+              <tr>
+                <td style="font-weight:500">${min}</td>
+                <td>${mem}</td>
+                <td>${act}</td>
+                <td>${age} yrs</td>
+                <td style="color:var(--c-${gr.startsWith('+')?'green':'red'})">${gr}%</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderAdmin() {
+  const el = document.getElementById('page-admin');
+  el.innerHTML = `
+    <div class="admin-tabs" id="admin-tabs">
+      ${['Zones','KCUs','Ministries','Competencies','Roles & Access'].map((t,i)=>`<div class="admin-tab ${i===0?'active':''}" onclick="switchAdminTab(${i}, this)">${t}</div>`).join('')}
+    </div>
+    <div id="admin-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="search-bar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input placeholder="Search zones..." /></div>
+        <button class="tb-btn primary">+ Add Zone</button>
+      </div>
+      <div class="card">
+        <div class="card-body" style="padding:0">
+          <table class="tbl">
+            <thead><tr><th>Zone Name</th><th>Zone Leader</th><th>KCUs</th><th>Members</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              ${[['Zone Alpha','Pastor Samuel K.','9','312','Active'],['Zone Beta','Deacon Peter L.','10','368','Active'],['Zone Gamma','Deacon Ruth M.','8','296','Active'],['Zone Delta','Elder James T.','11','308','Active']].map(([zone,leader,kcus,mem,status])=>`
+                <tr>
+                  <td style="font-weight:500">${zone}</td>
+                  <td>${leader}</td>
+                  <td>${kcus}</td>
+                  <td>${mem}</td>
+                  <td><span class="badge badge-green">${status}</span></td>
+                  <td><div style="display:flex;gap:4px"><button class="tb-btn" style="font-size:11px;padding:3px 8px">Edit</button><button class="tb-btn" style="font-size:11px;padding:3px 8px;color:var(--c-red)">Delete</button></div></td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+}
+function switchAdminTab(i, el) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function renderZones() {
+  const el = document.getElementById('page-zones');
+  el.innerHTML = `
+    <div class="three-col">
+      ${[
+        ['Zone Alpha','9','312','81%','Samuel K.','green'],
+        ['Zone Beta','10','368','74%','Peter L.','blue'],
+        ['Zone Gamma','8','296','70%','Ruth M.','amber'],
+        ['Zone Delta','11','308','79%','James T.','green'],
+      ].map(([zone,kcus,mem,att,leader,color])=>`
+        <div class="card zone-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div class="zone-name">${zone}</div>
+            <span class="badge badge-${color}">${att}</span>
+          </div>
+          <div style="font-size:11px;color:var(--c-text-muted);margin-bottom:10px">Leader: ${leader} · ${kcus} KCUs · ${mem} members</div>
+          <div class="zone-kcu-list">
+            ${Array.from({length:3},(_,i)=>`
+              <div class="zone-kcu-item">
+                <span>KCU ${i+1} — Area ${String.fromCharCode(65+i)}</span>
+                <span style="color:var(--c-text-muted);font-size:11px">${Math.floor(28+i*4)} members</span>
+              </div>`).join('')}
+            <div style="font-size:11px;color:var(--c-primary);cursor:pointer;margin-top:4px">+ ${parseInt(kcus)-3} more KCUs</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderLogin() {
+  const el = document.getElementById('page-login');
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:center;min-height:560px">
+      <div class="login-card">
+        <div class="login-logo">
+          <div class="login-icon"><svg viewBox="0 0 24 24"><path d="M12 2l2 6h6l-5 4 2 6-5-4-5 4 2-6-5-4h6z"/></svg></div>
+          <h2>Bethel Church</h2>
+          <p>Management System</p>
+        </div>
+        <div class="form-group"><label class="form-label">Username or Email</label><input class="form-input" placeholder="Enter your username" /></div>
+        <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" placeholder="••••••••" /></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--c-text-muted);cursor:pointer">
+            <input type="checkbox" /> Remember me
+          </label>
+          <span style="font-size:12px;color:var(--c-primary);cursor:pointer">Forgot password?</span>
+        </div>
+        <button class="login-submit">Sign In</button>
+        <div style="margin-top:16px;padding:12px;background:var(--c-bg2);border-radius:8px">
+          <p style="font-size:11px;color:var(--c-text-muted);margin-bottom:6px;font-weight:500">Demo Roles — click sidebar to switch:</p>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <span class="badge badge-blue">Pastor</span>
+            <span class="badge badge-green">Zone Leader</span>
+            <span class="badge badge-amber">KCU Leader</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// Initialize all pages
+renderDashboard();
+renderMembers();
+renderProfile();
+renderRegistration();
+renderAttendance();
+renderFollowUp();
+renderReports();
+renderAdmin();
+renderZones();
+renderLogin();
+
+// Render initial nav
+renderNav('pastor');
+
+// Re-render dashboard when role changes
+const origSwitchRole = switchRole;
+window.switchRole = function(role) {
+  currentRole = role;
+  document.querySelectorAll('.role-tab').forEach((t,i)=>t.classList.toggle('active',['pastor','zone','kcu'][i]===role));
+  const r = roles[role];
+  document.getElementById('role-display').textContent = r.tag;
+  document.getElementById('user-initials').textContent = r.initials;
+  document.getElementById('user-name').textContent = r.name;
+  document.getElementById('user-role-tag').textContent = r.tag;
+  renderNav(role);
+  renderDashboard();
+  navigateTo('dashboard');
+};
+</script>
